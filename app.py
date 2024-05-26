@@ -85,12 +85,10 @@ def get_conversational_chain(api_key):
     
     #This is where prompt engineering happens. It is crucial to get this right as the length and articluation of prompt affects response quality.
     prompt_template = """
-    Answer the following question in as detailed a manner as possible from the provided context.
-    Make sure to provide all the details. If the answer is not available, don't hallucinate and do not provide a wrong answer,
-    simply inform that you are unable to find a relevant answer.
-
+    Answer the question as precise as possible from the provided context.
+    Make sure to provide all the details. If the answer is not available, don't hallucinate and say "Answer not available in context" \n\n.
+    
     Context: \n {context}?\n
-
     Question: \n{question}\n
 
     Answer:
