@@ -50,7 +50,7 @@ def get_pdf_text(pdf_docs):
 
 # This is a function to split pdf text to text chunks
 def get_text_chunks(text):
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=1000)
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
     chunks = text_splitter.split_text(text)
     return chunks
 
@@ -68,8 +68,9 @@ def get_vector_store(text_chunks, api_key):
             st.success("Embeddings created and saved successfully.")
             break
         except Exception as e:
+            logging.error(f"Error embedding content: {e}", exc_info=True)
             st.error(f"Error embedding content: {e}. Retrying... ({attempt + 1}/{retry_attempts})")
-            time.sleep(2)  # Wait for 2 seconds before retrying
+            time.sleep(2 * (attempt + 1))
             continue
     if vector_store is None:
         st.error("Failed to create embeddings after multiple attempts.")
@@ -109,7 +110,7 @@ def user_input(user_question, api_key):
 
 # This snippet will be responsible for setting up the Streamlit page
 def main():
-    st.header("Document Chatbot panel:")
+    st.header("Document Chatbot Panel:")
 
     user_question = st.text_input("Ask a question from uploaded PDF files", key="user_question")
 
@@ -121,10 +122,13 @@ def main():
         pdf_docs = st.file_uploader("Upload your documents", accept_multiple_files=True, key="pdf_uploader")
         if st.button("Submit & Process", key="process_button") and api_key:
             with st.spinner("Processing..."):
-                raw_text = get_pdf_text(pdf_docs)
-                text_chunks = get_text_chunks(raw_text)
-                get_vector_store(text_chunks, api_key)
-                st.success("Done!")
+                try:
+                    raw_text = get_pdf_text(pdf_docs)
+                    text_chunks = get_text_chunks(raw_text)
+                    get_vector_store(text_chunks, api_key)
+                    st.success("Processing Done!")
+                except Exception as e:
+                    st.error(f"An error occurred during processing: {e}")
 
 if __name__ == "__main__":
     main()
